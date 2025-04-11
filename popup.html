@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Amazon Product Link Collector</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+    }
+    h2 {
+      font-size: 16px;
+      color: #232F3E;
+    }
+    p {
+      margin-bottom: 5px;
+    }
+    #serverUrl {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #a6a6a6;
+      border-radius: 3px;
+      margin-bottom: 10px;
+    }
+    #saveBtn {
+      background: linear-gradient(to bottom, #f7dfa5, #f0c14b);
+      border-color: #a88734 #9c7e31 #846a29;
+      color: #111;
+      border-width: 1px;
+      border-style: solid;
+      border-radius: 3px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    #saveBtn:hover {
+      background: linear-gradient(to bottom, #f5d78e, #eeb933);
+    }
+    #status {
+      margin-top: 10px;
+      color: #0066c0;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Amazon Product Link Collector</h2>
+  <p>Server URL:</p>
+  <input type="text" id="serverUrl" placeholder="https://your-server.com/api">
+  <button id="saveBtn">Speichern</button>
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
