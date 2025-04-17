@@ -4,7 +4,12 @@
   "version": "1.0",
   "description": "Collects Amazon product links to forward to a server",
   "permissions": ["activeTab", "storage"],
-  "host_permissions": ["*://www.amazon.de/*", "http://localhost:*", "https://localhost:*"],
+  "host_permissions": [
+    "*://www.amazon.de/*", 
+    "http://localhost:*", 
+    "https://localhost:*",
+    "https://amazon-cleaner.onrender.com/*"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

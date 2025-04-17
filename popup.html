@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Amazon Product Link Collector</title>
+  <title>Amazon Product Checker</title>
   <style>
     body {
       width: 300px;
@@ -15,12 +15,26 @@
     p {
       margin-bottom: 5px;
     }
+    .info-section {
+      margin-top: 10px;
+      border-top: 1px solid #e7e7e7;
+      padding-top: 10px;
+    }
+    .info-item {
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .label {
+      font-weight: bold;
+      color: #565656;
+    }
     #serverUrl {
       width: 100%;
       padding: 6px;
       border: 1px solid #a6a6a6;
       border-radius: 3px;
       margin-bottom: 10px;
+      display: none;
     }
     #saveBtn {
       background: linear-gradient(to bottom, #f7dfa5, #f0c14b);
@@ -31,23 +45,56 @@
       border-radius: 3px;
       padding: 6px 10px;
       cursor: pointer;
-    }
-    #saveBtn:hover {
-      background: linear-gradient(to bottom, #f5d78e, #eeb933);
+      display: none;
     }
     #status {
       margin-top: 10px;
       color: #0066c0;
       font-size: 12px;
     }
+    .status-icon {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .status-icon.green {
+      background-color: #2E7D32;
+    }
+    .status-icon.gray {
+      background-color: #757575;
+    }
+    .status-icon.orange {
+      background-color: #FF9900;
+    }
   </style>
 </head>
 <body>
-  <h2>Amazon Product Link Collector</h2>
-  <p>Server URL:</p>
+  <h2>Amazon Product Checker</h2>
+  
+  <!-- Hidden original elements -->
+  <p style="display: none;">Server URL:</p>
   <input type="text" id="serverUrl" placeholder="https://your-server.com/api">
   <button id="saveBtn">Speichern</button>
   <div id="status"></div>
+  
+  <!-- New info section -->
+  <div class="info-section">
+    <div class="info-item">
+      <span class="status-icon green"></span>
+      <span class="label">Reported:</span> Products that have been reported
+    </div>
+    <div class="info-item">
+      <span class="status-icon orange"></span>
+      <span class="label">Report:</span> Products not yet reported
+    </div>
+    <div class="info-item">
+      <span class="status-icon gray"></span>
+      <span class="label">Removed:</span> Products already removed
+    </div>
+  </div>
+  
   <script src="popup.js"></script>
 </body>
 </html>

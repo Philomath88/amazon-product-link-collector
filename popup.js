@@ -1,50 +1,29 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Load saved server URL if any
-  chrome.storage.local.get(['serverUrl'], function(result) {
-    if (result.serverUrl) {
-      document.getElementById('serverUrl').value = result.serverUrl;
-    } else {
-      // Pre-fill with the localhost endpoint for testing
-      document.getElementById('serverUrl').value = 'http://localhost:3005/api/plugin/products';
-    }
-  });
-
-  // Save button click handler
-  document.getElementById('saveBtn').addEventListener('click', function() {
-    const serverUrl = document.getElementById('serverUrl').value.trim();
-    
-    if (serverUrl) {
-      // Validate URL format
-      try {
-        new URL(serverUrl);
-        
-        // Save the server URL to chrome storage
-        chrome.storage.local.set({serverUrl: serverUrl}, function() {
-          const status = document.getElementById('status');
-          status.textContent = 'Einstellungen gespeichert!';
-          status.style.color = '#0066c0';
-          setTimeout(function() {
-            status.textContent = '';
-          }, 2000);
-        });
-      } catch (e) {
-        // Invalid URL format
-        const status = document.getElementById('status');
-        status.textContent = 'Ungültige URL! Bitte geben Sie eine gültige URL ein.';
-        status.style.color = '#B12704';
-      }
-    } else {
-      // Empty URL
-      const status = document.getElementById('status');
-      status.textContent = 'Bitte geben Sie eine URL ein.';
-      status.style.color = '#B12704';
-    }
-  });
+  // The base URL is now hardcoded
+  const baseUrl = 'https://amazon-cleaner.onrender.com';
   
-  // Also allow saving with Enter key
-  document.getElementById('serverUrl').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      document.getElementById('saveBtn').click();
-    }
+  // Add info message about the hardcoded server
+  const serverInfo = document.createElement('p');
+  serverInfo.textContent = 'Server: ' + baseUrl;
+  serverInfo.style.marginTop = '10px';
+  serverInfo.style.fontSize = '12px';
+  serverInfo.style.color = '#0066c0';
+  
+  // Replace server URL input with info message
+  const serverUrlInput = document.getElementById('serverUrl');
+  const saveBtn = document.getElementById('saveBtn');
+  
+  if (serverUrlInput && saveBtn) {
+    serverUrlInput.style.display = 'none';
+    saveBtn.style.display = 'none';
+    document.querySelector('p').style.display = 'none'; // Hide "Server URL:" text
+    
+    // Add server info after the hidden elements
+    saveBtn.parentNode.insertBefore(serverInfo, document.getElementById('status'));
+  }
+  
+  // Save the base URL to chrome storage on load
+  chrome.storage.local.set({baseUrl: baseUrl}, function() {
+    console.log('Base URL saved:', baseUrl);
   });
 });

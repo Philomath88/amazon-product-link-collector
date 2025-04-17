@@ -169,86 +169,157 @@ function addButtonsToProducts() {
     // Create the button
     const button = document.createElement('button');
     button.className = 'product-collector-btn';
-    button.textContent = 'Sammeln';  // German for "Collect"
-    button.style.cssText = 'background-color: #FF9900; color: black; font-weight: bold; border: none; padding: 8px 12px; margin: 5px 0; border-radius: 3px; cursor: pointer; display: block; width: 100%;';
-    
-    // Add click event listener
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Get the server URL from storage
-      chrome.storage.local.get(['serverUrl'], function(result) {
-        if (!result.serverUrl) {
-          alert('Bitte geben Sie die Server-URL in den Erweiterungseinstellungen ein!');
-          return;
-        }
-        
-        // Send the clean product URL to the server
-        sendProductToServer(cleanUrl, result.serverUrl, button);
-      });
-    });
+    button.setAttribute('data-asin', cleanAsin);
+    button.textContent = 'Checking...';  // Initial state while checking
+    button.style.cssText = 'background-color: #cccccc; color: black; font-weight: bold; border: none; padding: 8px 12px; margin: 5px 0; border-radius: 3px; cursor: pointer; display: block; width: 100%;';
     
     // Add the button after the insertion point
     insertionPoint.parentNode.insertBefore(button, insertionPoint.nextSibling);
     console.log('Button added for ASIN: ' + asin);
+    
+    // Check product status in database
+    checkProductStatus(cleanAsin, button);
   });
 }
 
-function sendProductToServer(productUrl, serverUrl, buttonElement) {
-  // Change button appearance to show it's processing
-  buttonElement.textContent = 'Senden...';
-  buttonElement.disabled = true;
-  
-  console.log('Sending to server:', serverUrl);
-  console.log('Product URL:', productUrl);
-  
-  // Extract the ASIN from the URL for logging
-  const asin = extractAsinFromUrl(productUrl) || productUrl.split('/dp/')[1]?.substring(0, 10) || 'unknown';
-  
-  console.log('Product ASIN:', asin);
-  
-  // Format the payload according to your local API's expected format
-  fetch(serverUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      amazonUrl: productUrl
-    })
-  })
-  .then(response => {
-    console.log('Response status:', response.status);
-    if (!response.ok) {
-      throw new Error('Server response was not OK: ' + response.status);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('Success response:', data);
-    // Show success state
-    buttonElement.textContent = 'Gesendet ✓';
-    buttonElement.style.backgroundColor = '#2E7D32';
+// Function to check product status in database
+function checkProductStatus(asin, buttonElement) {
+  chrome.storage.local.get(['baseUrl'], function(result) {
+    const baseUrl = result.baseUrl || 'https://amazon-cleaner.onrender.com';
+    const apiUrl = `${baseUrl}/api/product/${asin}`;
     
-    // Reset after 3 seconds
-    setTimeout(() => {
-      buttonElement.textContent = 'Sammeln';
-      buttonElement.style.backgroundColor = '#FF9900';
-      buttonElement.disabled = false;
-    }, 3000);
-  })
-  .catch(error => {
-    // Show error state
-    buttonElement.textContent = 'Fehler ✗';
-    buttonElement.style.backgroundColor = '#C62828';
-    console.error('Error sending product URL:', error);
+    console.log('Checking product status:', apiUrl);
     
-    // Reset after 3 seconds
-    setTimeout(() => {
-      buttonElement.textContent = 'Sammeln';
-      buttonElement.style.backgroundColor = '#FF9900';
-      buttonElement.disabled = false;
-    }, 3000);
+    fetch(apiUrl)
+      .then(response => {
+        if (response.status === 404) {
+          // Product not found in database
+          setButtonState(buttonElement, 'unreported', null);
+          return null;
+        } else if (!response.ok) {
+          throw new Error('Server response was not OK: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (!data) return; // 404 case, already handled
+        
+        console.log('Product status data:', data);
+        
+        if (data.success && data.status) {
+          // Update button based on product status
+          setButtonState(buttonElement, data.status, data.reportDate);
+        } else {
+          // Default to unreported if status is unclear
+          setButtonState(buttonElement, 'unreported', null);
+        }
+      })
+      .catch(error => {
+        console.error('Error checking product status:', error);
+        // On error, show default state with option to report
+        setButtonState(buttonElement, 'unreported', null);
+      });
   });
 }
+
+// Function to set button state based on product status
+function setButtonState(button, status, reportDate) {
+  const asin = button.getAttribute('data-asin');
+  
+  switch(status) {
+    case 'reported':
+      button.textContent = 'Reported';
+      if (reportDate) {
+        const date = new Date(reportDate);
+        const formattedDate = date.toLocaleDateString('de-DE');
+        button.textContent += ` (${formattedDate})`;
+      }
+      button.style.backgroundColor = '#2E7D32'; // Green
+      button.style.color = 'white';
+      break;
+      
+    case 'removed':
+      button.textContent = 'Removed';
+      button.style.backgroundColor = '#757575'; // Gray
+      button.style.color = 'white';
+      button.disabled = true;
+      break;
+      
+    case 'unreported':
+    default:
+      button.textContent = 'Report';
+      button.style.backgroundColor = '#FF9900'; // Amazon orange
+      button.style.color = 'black';
+      
+      // Add click event to report the product
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        reportProduct(asin, button);
+      });
+      break;
+  }
+}
+
+// Function to report a product to the database
+function reportProduct(asin, button) {
+  chrome.storage.local.get(['baseUrl'], function(result) {
+    const baseUrl = result.baseUrl || 'https://amazon-cleaner.onrender.com';
+    const apiUrl = `${baseUrl}/api/product/add`;
+    
+    // Change button appearance to show it's processing
+    button.textContent = 'Sending...';
+    button.disabled = true;
+    button.style.backgroundColor = '#cccccc';
+    
+    console.log('Reporting product to database:', asin);
+    
+    fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        asin: asin,
+        marketplaceId: 'A1PA6795UKMFR9' // German marketplace ID
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Server response was not OK: ' + response.status);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Report response:', data);
+      
+      if (data.success || data.status) {
+        // Check status of the response
+        if (data.status === 'already_reported') {
+          setButtonState(button, 'reported', data.reportDate);
+        } else if (data.status === 'removed') {
+          setButtonState(button, 'removed', null);
+        } else {
+          // If we got a 201 Created, it's a newly reported product
+          setButtonState(button, 'reported', new Date().toISOString());
+        }
+      } else {
+        throw new Error('Unknown response format');
+      }
+    })
+    .catch(error => {
+      console.error('Error reporting product:', error);
+      
+      // Show error state
+      button.textContent = 'Error ✗';
+      button.style.backgroundColor = '#C62828'; // Red
+      button.style.color = 'white';
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setButtonState(button, 'unreported', null);
+      }, 3000);
+    });
+  });
+}
+
