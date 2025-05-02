@@ -68,6 +68,9 @@
     .status-icon.orange {
       background-color: #FF9900;
     }
+    .status-icon.blue {
+      background-color: #0277BD;
+    }
   </style>
 </head>
 <body>
@@ -83,7 +86,7 @@
   <div class="info-section">
     <div class="info-item">
       <span class="status-icon green"></span>
-      <span class="label">Reported:</span> Products that have been reported
+      <span class="label">Reported:</span> Products that have been reported (clickable to re-add)
     </div>
     <div class="info-item">
       <span class="status-icon orange"></span>
@@ -92,6 +95,35 @@
     <div class="info-item">
       <span class="status-icon gray"></span>
       <span class="label">Removed:</span> Products already removed
+    </div>
+    <div class="info-item">
+      <span class="status-icon blue"></span>
+      <span class="label">In Database:</span> Products awaiting assessment (clickable to re-add)
+    </div>
+    <div class="info-item">
+      <span class="status-icon" style="background-color: #6A1B9A;"></span>
+      <span class="label">Staged:</span> Products in staging process (clickable to re-add)
+    </div>
+    <div class="info-item">
+      <span class="status-icon" style="background-color: #C62828;"></span>
+      <span class="label">Fix Required:</span> Products marked as removed but still live
+    </div>
+    <div class="info-item">
+      <span style="display: inline-block; font-size: 16px; width: 16px; text-align: center;">ℹ️</span>
+      <span class="label">Info:</span> Click to view detailed product information in database
+    </div>
+  </div>
+  
+  <!-- Debug section -->
+  <div class="info-section">
+    <div class="info-item">
+      <label for="debugMode" style="cursor:pointer; display:flex; align-items:center;">
+        <input type="checkbox" id="debugMode" style="margin-right:5px;">
+        <span class="label">Enable Debug Mode</span>
+      </label>
+      <div id="debugInfo" style="font-size:11px; margin-top:5px; color:#666; display:none;">
+        Debug logs active. Check browser console for detailed information.
+      </div>
     </div>
   </div>
   
