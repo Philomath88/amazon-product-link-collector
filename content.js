@@ -1002,9 +1002,9 @@ async function reportProduct(asin, button) {
           debugLog(`[DEBUG ${asin}] Product already removed for ${requestId}`);
           setButtonState(button, 'removed', null);
         } else {
-          // If we got a 201 Created, it's a newly reported product
-          debugLog(`[DEBUG ${asin}] Product newly reported for ${requestId}`);
-          setButtonState(button, 'reported', new Date().toISOString());
+          // If we got a 201 Created, it's a newly added product (show as staged)
+          debugLog(`[DEBUG ${asin}] Product newly staged for ${requestId}`);
+          setButtonState(button, 'staged', new Date().toISOString());
         }
       } else {
         debugLog(`[DEBUG ${asin}] Unknown response format for ${requestId}:`, data);
